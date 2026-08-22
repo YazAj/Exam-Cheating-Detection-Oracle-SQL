@@ -1,0 +1,382 @@
+
+SQL*Plus: Release 21.0.0.0.0 - Production on Tue Mar 17 22:28:16 2026
+Version 21.3.0.0.0
+
+Copyright (c) 1982, 2021, Oracle.  All rights reserved.
+
+Enter user-name: system
+Enter password:
+Last Successful login time: Tue Mar 17 2026 21:24:33 +03:00
+
+Connected to:
+Oracle Database 21c Express Edition Release 21.0.0.0.0 - Production
+Version 21.3.0.0.0
+
+SQL> CREATE TABLE Students (
+  2      Student_ID NUMBER PRIMARY KEY,
+  3      Student_Name VARCHAR2(100) NOT NULL,
+  4      Major VARCHAR2(50),
+  5      Year_Level NUMBER
+  6  );
+
+Table created.
+
+SQL> CREATE TABLE Instructors (
+  2      Instructor_ID NUMBER PRIMARY KEY,
+  3      Instructor_Name VARCHAR2(100) NOT NULL,
+  4      Department VARCHAR2(50)
+  5  );
+
+Table created.
+
+SQL> CREATE TABLE Exam_Rooms (
+  2      Room_ID NUMBER PRIMARY KEY,
+  3      Room_Name VARCHAR2(50),
+  4      Capacity NUMBER
+  5  );
+
+Table created.
+
+SQL> CREATE TABLE Exams (
+  2      Exam_ID NUMBER PRIMARY KEY,
+  3      Course_Name VARCHAR2(100),
+  4      Exam_Date DATE,
+  5      Room_ID NUMBER,
+  6      FOREIGN KEY (Room_ID) REFERENCES Exam_Rooms(Room_ID)
+  7  );
+
+Table created.
+
+SQL> CREATE TABLE Invigilators (
+  2      Invigilator_ID NUMBER PRIMARY KEY,
+  3      Instructor_ID NUMBER,
+  4      Exam_ID NUMBER,
+  5      FOREIGN KEY (Instructor_ID) REFERENCES Instructors(Instructor_ID),
+  6      FOREIGN KEY (Exam_ID) REFERENCES Exams(Exam_ID)
+  7  );
+
+Table created.
+
+SQL> CREATE TABLE Cheating_Types (
+  2      Type_ID NUMBER PRIMARY KEY,
+  3      Type_Name VARCHAR2(100)
+  4  );
+
+Table created.
+
+SQL> CREATE TABLE Cheating_Incidents (
+  2      Incident_ID NUMBER PRIMARY KEY,
+  3      Student_ID NUMBER,
+  4      Exam_ID NUMBER,
+  5      Type_ID NUMBER,
+  6      Incident_Date DATE,
+  7      Description VARCHAR2(255),
+  8      FOREIGN KEY (Student_ID) REFERENCES Students(Student_ID),
+  9      FOREIGN KEY (Exam_ID) REFERENCES Exams(Exam_ID),
+ 10      FOREIGN KEY (Type_ID) REFERENCES Cheating_Types(Type_ID)
+ 11  );
+
+Table created.
+
+SQL> CREATE TABLE Violations (
+  2      Violation_ID NUMBER PRIMARY KEY,
+  3      Student_ID NUMBER,
+  4      Incident_ID NUMBER,
+  5      Violation_Count NUMBER,
+  6      FOREIGN KEY (Student_ID) REFERENCES Students(Student_ID),
+  7      FOREIGN KEY (Incident_ID) REFERENCES Cheating_Incidents(Incident_ID)
+  8  );
+
+Table created.
+
+SQL> CREATE TABLE Penalties (
+  2      Penalty_ID NUMBER PRIMARY KEY,
+  3      Violation_ID NUMBER,
+  4      Penalty_Type VARCHAR2(100),
+  5      Penalty_Date DATE,
+  6      FOREIGN KEY (Violation_ID) REFERENCES Violations(Violation_ID)
+  7  );
+
+Table created.
+
+SQL> INSERT INTO Students VALUES (1, 'Ahmad Ali', 'Computer Science', 3);
+
+1 row created.
+
+SQL> INSERT INTO Students VALUES (2, 'Sara Khaled', 'Information Systems', 2);
+
+1 row created.
+
+SQL> INSERT INTO Students VALUES (3, 'Omar Hassan', 'Cyber Security', 4);
+
+1 row created.
+
+SQL> INSERT INTO Students VALUES (4, 'Lina Mohammad', 'Software Engineering', 1);
+
+1 row created.
+
+SQL> INSERT INTO Instructors VALUES (1, 'Dr. Moath', 'IT');
+
+1 row created.
+
+SQL> INSERT INTO Instructors VALUES (2, 'Dr. Ablah', 'CS');
+
+1 row created.
+
+SQL>  INSERT INTO Exam_Rooms VALUES (1, 'Room 35B', 30);
+
+1 row created.
+
+SQL> INSERT INTO Exam_Rooms VALUES (2, 'Room 36B', 25);
+
+1 row created.
+
+SQL> INSERT INTO Exams VALUES (1, 'Database', TO_DATE('2026-04-10','YYYY-MM-DD'), 1);
+
+1 row created.
+
+SQL> INSERT INTO Exams VALUES (2, 'Networks', TO_DATE('2026-04-12','YYYY-MM-DD'), 2);
+
+1 row created.
+
+SQL> INSERT INTO Invigilators VALUES (1, 1, 1);
+
+1 row created.
+
+SQL> INSERT INTO Invigilators VALUES (2, 2, 2);
+
+1 row created.
+
+SQL> INSERT INTO Cheating_Types VALUES (1, 'Using Phone');
+
+1 row created.
+
+SQL> INSERT INTO Cheating_Types VALUES (2, 'Talking');
+
+1 row created.
+
+SQL> INSERT INTO Cheating_Types VALUES (3, 'Copying');
+
+1 row created.
+
+SQL> INSERT INTO Cheating_Incidents VALUES (1, 1, 1, 1, SYSDATE, 'Used mobile phone');
+
+1 row created.
+
+SQL> INSERT INTO Cheating_Incidents VALUES (2, 2, 1, 2, SYSDATE, 'Talking during exam');
+
+1 row created.
+
+SQL> INSERT INTO Cheating_Incidents VALUES (3, 1, 2, 3, SYSDATE, 'Copied answers');
+
+1 row created.
+
+SQL> INSERT INTO Violations VALUES (1, 1, 1, 1);
+
+1 row created.
+
+SQL> INSERT INTO Violations VALUES (2, 2, 2, 1);
+
+1 row created.
+
+SQL> INSERT INTO Violations VALUES (3, 1, 3, 2);
+
+1 row created.
+
+SQL> INSERT INTO Penalties VALUES (1, 1, 'Warning', SYSDATE);
+
+1 row created.
+
+SQL> INSERT INTO Penalties VALUES (2, 2, 'Mark Deduction', SYSDATE);
+
+1 row created.
+
+SQL> INSERT INTO Penalties VALUES (3, 3, 'Exam Fail', SYSDATE);
+
+1 row created.
+
+SQL> COMMIT;
+
+Commit complete.
+
+SQL> SELECT s.Student_Name, e.Course_Name, c.Type_Name, ci.Description
+  2  FROM Students s
+  3  JOIN Cheating_Incidents ci ON s.Student_ID = ci.Student_ID
+  4  JOIN Exams e ON ci.Exam_ID = e.Exam_ID
+  5  JOIN Cheating_Types c ON ci.Type_ID = c.Type_ID;
+
+STUDENT_NAME
+--------------------------------------------------------------------------------
+COURSE_NAME
+--------------------------------------------------------------------------------
+TYPE_NAME
+--------------------------------------------------------------------------------
+DESCRIPTION
+--------------------------------------------------------------------------------
+Ahmad Ali
+Database
+Using Phone
+Used mobile phone
+
+
+STUDENT_NAME
+--------------------------------------------------------------------------------
+COURSE_NAME
+--------------------------------------------------------------------------------
+TYPE_NAME
+--------------------------------------------------------------------------------
+DESCRIPTION
+--------------------------------------------------------------------------------
+Ahmad Ali
+Networks
+Copying
+Copied answers
+
+
+STUDENT_NAME
+--------------------------------------------------------------------------------
+COURSE_NAME
+--------------------------------------------------------------------------------
+TYPE_NAME
+--------------------------------------------------------------------------------
+DESCRIPTION
+--------------------------------------------------------------------------------
+Sara Khaled
+Database
+Talking
+Talking during exam
+
+
+SQL> CREATE OR REPLACE TRIGGER trg_violation_auto
+  2  AFTER INSERT ON Cheating_Incidents
+  3  FOR EACH ROW
+  4  DECLARE
+  5      v_count NUMBER;
+  6  BEGIN
+  7
+  8      SELECT COUNT(*) INTO v_count
+  9      FROM Violations
+ 10      WHERE Student_ID = :NEW.Student_ID;
+ 11
+ 12      IF v_count = 0 THEN
+ 13
+ 14          INSERT INTO Violations (
+ 15              Violation_ID,
+ 16              Student_ID,
+ 17              Incident_ID,
+ 18              Violation_Count
+ 19          ) VALUES (
+ 20              Violations_seq.NEXTVAL,
+ 21              :NEW.Student_ID,
+ 22              :NEW.Incident_ID,
+ 23              1
+ 24          );
+ 25      ELSE
+ 26
+ 27          UPDATE Violations
+ 28          SET Violation_Count = Violation_Count + 1
+ 29          WHERE Student_ID = :NEW.Student_ID;
+ 30      END IF;
+ 31  END;
+ 32  /
+
+Warning: Trigger created with compilation errors.
+
+SQL> SHOW ERRORS;
+Errors for TRIGGER TRG_VIOLATION_AUTO:
+
+LINE/COL ERROR
+-------- -----------------------------------------------------------------
+11/9     PL/SQL: SQL Statement ignored
+17/13    PL/SQL: ORA-02289: sequence does not exist
+SQL> SELECT sequence_name FROM user_sequences;
+
+SEQUENCE_NAME
+--------------------------------------------------------------------------------
+LOGMNR_DIDS$
+LOGMNR_EVOLVE_SEQ$
+LOGMNR_SEQ$
+LOGMNR_UIDS$
+MVIEW$_ADVSEQ_GENERIC
+MVIEW$_ADVSEQ_ID
+ROLLING_EVENT_SEQ$
+
+7 rows selected.
+
+SQL> CREATE SEQUENCE Violations_seq
+  2  START WITH 100
+  3  INCREMENT BY 1;
+
+Sequence created.
+
+SQL> SELECT sequence_name FROM user_sequences;
+
+SEQUENCE_NAME
+--------------------------------------------------------------------------------
+LOGMNR_DIDS$
+LOGMNR_EVOLVE_SEQ$
+LOGMNR_SEQ$
+LOGMNR_UIDS$
+MVIEW$_ADVSEQ_GENERIC
+MVIEW$_ADVSEQ_ID
+ROLLING_EVENT_SEQ$
+VIOLATIONS_SEQ
+
+8 rows selected.
+
+SQL> VIOLATIONS_SEQ
+SP2-0734: unknown command beginning "VIOLATIONS..." - rest of line ignored.
+SQL> DROP TRIGGER trg_violation_auto;
+
+Trigger dropped.
+
+SQL> CREATE OR REPLACE TRIGGER trg_violation_auto
+  2  AFTER INSERT ON Cheating_Incidents
+  3  FOR EACH ROW
+  4  DECLARE
+  5      v_count NUMBER;
+  6  BEGIN
+  7      SELECT COUNT(*) INTO v_count
+  8      FROM Violations
+  9      WHERE Student_ID = :NEW.Student_ID;
+ 10
+ 11      IF v_count = 0 THEN
+ 12          INSERT INTO Violations (
+ 13              Violation_ID,
+ 14              Student_ID,
+ 15              Incident_ID,
+ 16              Violation_Count
+ 17          ) VALUES (
+ 18              Violations_seq.NEXTVAL,
+ 19              :NEW.Student_ID,
+ 20              :NEW.Incident_ID,
+ 21              1
+ 22          );
+ 23      ELSE
+ 24          UPDATE Violations
+ 25          SET Violation_Count = Violation_Count + 1
+ 26          WHERE Student_ID = :NEW.Student_ID;
+ 27      END IF;
+ 28  END;
+ 29  /
+
+Trigger created.
+
+SQL> SHOW ERRORS;
+No errors.
+SQL> INSERT INTO Cheating_Incidents
+  2  VALUES (6, 1, 1, 1, SYSDATE, 'Test trigger');
+
+1 row created.
+
+SQL> SELECT * FROM Violations;
+
+VIOLATION_ID STUDENT_ID INCIDENT_ID VIOLATION_COUNT
+------------ ---------- ----------- ---------------
+           1          1           1               2
+           2          2           2               1
+           3          1           3               3
+
+SQL> OMMIT;
+SP2-0042: unknown command "OMMIT" - rest of line ignored.
+SQL>
